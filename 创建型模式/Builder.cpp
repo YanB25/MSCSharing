@@ -50,52 +50,55 @@ private:
 // ========================================
 class Builder {
 public:
-    virtual void build() = 0;
     virtual Food* getResult() = 0;
+    virtual void putIceOrWater() = 0;
+    virtual void putContains() = 0;
+    virtual void init() = 0;
 };
 
 class Make_IceJuice : public Builder {
 public:
-    virtual void build(); 
     Drink* getResult() { return drink_; }
     ~Make_IceJuice() { delete drink_;  drink_ = nullptr;}
-private:
-    Drink* drink_;
-    void putIce() { drink_->setIceOrWator(new Ice());}
+
+    void putIceOrWater() { drink_->setIceOrWator(new Ice());}
     void putContains() { drink_->setContains(new Juice()); }
     void init() { drink_ = new Drink(); cout << "init a drink" << endl;}
+private:
+    Drink* drink_;
 };
-
-void Make_IceJuice::build() { 
-    init();
-    putIce();
-    putContains(); 
-}
 
 class Make_WaterMilk : public Builder {
 public:
-    virtual void build();
     Drink* getResult() { return drink_; }
     ~Make_WaterMilk() { delete drink_; drink_ = nullptr; }
-private:
-    Drink* drink_;
-    void putWater() { drink_->setIceOrWator(new Water());}
+
+    void putIceOrWater() { drink_->setIceOrWator(new Water());}
     void putContains() { drink_->setContains(new Milk());}
     void init() { drink_ = new Drink(); cout << "init a drink" << endl; }
+private:
+    Drink* drink_;
 };
-void Make_WaterMilk::build() {
-    init();
-    putContains();
-    putWater();
-}
 
 class Waitor {
 public:
-    void setMeal(Builder* builder) { builder_ = builder; cout << "Waitor: begin to make the meal" << endl; }
-    Food* getFood() { builder_->build(); cout << "Waitor: here is your meal" << endl; return builder_->getResult(); }
+    void setMeal(Builder* builder);
+    Food* getFood();
 private:
     Builder* builder_;
 };
+void Waitor::setMeal(Builder* builder) {
+    builder_ = builder; 
+    cout << "Waitor: begin to make the meal" << endl; 
+}
+Food* Waitor::getFood() {
+    //codes below guarantee order and numbers
+    builder_->init();
+    builder_->putIceOrWater();
+    builder_->putContains();
+    cout << "Waitor: here is your meal" << endl; 
+    return builder_->getResult(); 
+}
 // ====================================================
 int main() {
     Waitor waitor;
