@@ -14,6 +14,6 @@ class Person {
 
 };
 
-class Student : Person {
+class Student : public Person {
 
 };

@@ -1,3 +1,4 @@
+#include <vector>
 #include <iostream>
 using namespace std;
 
@@ -13,46 +14,69 @@ private:
 
 class Command {
 public:
-    Command(Account& account) : account_(account) {}
-    virtual void excute(double) = 0;
+    virtual void excute(Account* acc) = 0;
     virtual ~Command(){}
 protected:
-    Account& account_;
+    double amount_;
 };
 
 class PutInMoneyCommand : public Command {
 public:
-    using Command::Command;
-    virtual void excute(double m) { account_.MoneyIn(m); }
+    PutInMoneyCommand(double amount) { amount_ = amount; }
+    virtual void excute(Account* acc) { acc->MoneyIn(amount_); }
 };
 
 class PutOutMoneyCommand : public Command {
 public:
-    using Command::Command;
-    virtual void excute(double m) { account_.MoneyOut(m); }
+    PutOutMoneyCommand(double amount) { amount_ = amount; }
+    virtual void excute(Account* acc) { acc->MoneyOut(amount_); }
 };
 
+class PutInAndOutCommand : public Command {
+public:
+    PutInAndOutCommand() { 
+        commands.push_back(new PutInMoneyCommand(100));
+        commands.push_back(new PutOutMoneyCommand(20));
+    }
+    virtual void excute(Account* acc) {
+        for (const auto& com : commands) {
+           com->excute(acc);
+        }
+    }
+    virtual ~PutInAndOutCommand() {
+        for (auto &com : commands) {
+            delete com;
+        }
+    }
+private:
+    vector<Command*> commands;
+};
 class Invoker {
 public:
     void setCommand(Command* c) { command_ = c; }
     Command* getCommand() { return command_; }
-    void call(double m) { command_->excute(m); }
+    void call(Account* acc) { command_->excute(acc); }
 private:
     Command* command_;
 };
 
 int main() {
     Account account(100);
-    Command* moneyIn = new PutInMoneyCommand(account);
-    Command* moneyOut = new PutOutMoneyCommand(account);
+    Command* moneyIn = new PutInMoneyCommand(10);
+    Command* moneyOut = new PutOutMoneyCommand(20);
+    Command* moneyInAndOut = new PutInAndOutCommand();
     Invoker* invoker = new Invoker();
 
     invoker->setCommand(moneyIn);
-    invoker->call(20);
+    invoker->call(&account);
     
     delete invoker->getCommand();
     invoker->setCommand(moneyOut);
-    invoker->call(14);
+    invoker->call(&account);
+
+    delete invoker->getCommand();
+    invoker->setCommand(moneyInAndOut);
+    invoker->call(&account);
 
     delete invoker->getCommand();
     delete invoker;

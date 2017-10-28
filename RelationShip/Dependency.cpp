@@ -2,14 +2,14 @@ class A;
 class B {
 public:
     void func1() { 
-        B* b = new B();
+        A* a = new A();
     }
 
-    void func2(const B& b) {
+    void func2(const A& a) {
         //statements
     }
 
     void func3() {
-        B::func();
+        A::func(); //static function
     }
 };
